@@ -1,0 +1,29 @@
+{
+  "name": "google-news-cli",
+  "version": "1.0.0",
+  "description": "Get the latest news from Google News right in your command line.",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "google-news": "./index.js"
+  },
+  "engines": {
+    "node": ">=12.22.0"
+  },
+  "keywords": [
+    "google-news",
+    "cli",
+    "news",
+    "rss",
+    "terminal"
+  ],
+  "author": "Antigravity Pair Programmer",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^8.3.0",
+    "open": "^8.4.2",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2",
+    "rss-parser": "^3.13.0"
+  }
+}

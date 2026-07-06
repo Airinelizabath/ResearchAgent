@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Brief Agent</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- MarkedJS for real-time Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            overflow-y: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header Style */
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        /* Glassmorphic Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        button {
+            margin-top: 0.5rem;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Activity Logs Console */
+        .console {
+            margin-top: 1.5rem;
+            background: rgba(10, 15, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .console-line {
+            line-height: 1.4;
+            display: flex;
+            gap: 0.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Output Container */
+        .output-card {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .output-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .output-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .guardrail-status {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .guardrail-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .guardrail-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* Markdown Styles */
+        .markdown-body {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #e2e8f0;
+        }
+
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            color: var(--text-main);
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.35rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.3rem;
+        }
+
+        .markdown-body p {
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .markdown-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-body a {
+            color: #818cf8;
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(129, 140, 248, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .markdown-body a:hover {
+            color: #a5b4fc;
+            border-bottom-style: solid;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 1rem;
+            color: var(--text-muted);
+            margin: 1rem 0;
+            font-style: italic;
+        }
+
+        /* Alert/Error Box */
+        .error-box {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            animation: shake 0.4s ease;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Research Brief Agent</h1>
+            <p>Gather insights, synthesize reports, and verify claims with Gemini</p>
+        </header>
+
+        <main class="card">
+            <form id="researchForm" onsubmit="handleSubmit(event)" class="form-group">
+                <label for="question">Research Question</label>
+                <div class="input-container">
+                    <textarea 
+                        id="question" 
+                        name="question" 
+                        placeholder="e.g. What are the latest developments in image similarity metrics?" 
+                        required
+                    ></textarea>
+                </div>
+                <button type="submit" id="submitBtn">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="btnText">Generate Research Brief</span>
+                </button>
+            </form>
+
+            <div class="error-box" id="errorBox"></div>
+
+            <div class="console" id="console"></div>
+        </main>
+
+        <section class="output-card" id="outputCard">
+            <div class="output-header">
+                <h2>Generated Brief</h2>
+                <div class="guardrail-status" id="guardrailStatus"></div>
+            </div>
+            <div class="markdown-body" id="briefContent"></div>
+        </section>
+    </div>
+
+    <script>
+        const form = document.getElementById('researchForm');
+        const questionInput = document.getElementById('question');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const errorBox = document.getElementById('errorBox');
+        const consoleLog = document.getElementById('console');
+        const outputCard = document.getElementById('outputCard');
+        const briefContent = document.getElementById('briefContent');
+        const guardrailStatus = document.getElementById('guardrailStatus');
+
+        function appendConsole(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            line.style.color = type === 'error' ? '#fca5a5' : '#a5b4fc';
+            line.textContent = `> ${message}`;
+            consoleLog.appendChild(line);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // Clear previous states
+            errorBox.style.display = 'none';
+            errorBox.textContent = '';
+            consoleLog.innerHTML = '';
+            consoleLog.style.display = 'flex';
+            outputCard.style.display = 'none';
+            briefContent.innerHTML = '';
+            
+            // Disable button and show spinner
+            submitBtn.disabled = true;
+            spinner.style.display = 'block';
+            btnText.textContent = 'Agent Executing...';
+
+            appendConsole('Sending request to agent...');
+
+            // Connect using Server-Sent Events (SSE)
+            const eventSource = new EventSource(`/research?question=${encodeURIComponent(question)}`);
+
+            let currentBriefMarkdown = '';
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'status') {
+                    appendConsole(data.message);
+                } 
+                else if (data.type === 'text') {
+                    // Show the output card as soon as text starts streaming
+                    if (outputCard.style.display !== 'block') {
+                        outputCard.style.display = 'block';
+                    }
+                    currentBriefMarkdown += data.content;
+                    // Render streaming markdown to HTML
+                    briefContent.innerHTML = marked.parse(currentBriefMarkdown);
+                    // Smoothly scroll down output card if needed
+                    outputCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                } 
+                else if (data.type === 'citation_check') {
+                    guardrailStatus.className = 'guardrail-status';
+                    if (data.status === 'success') {
+                        guardrailStatus.classList.add('guardrail-success');
+                        guardrailStatus.textContent = '✅ Verified Citations';
+                        appendConsole(data.message);
+                    } else {
+                        guardrailStatus.classList.add('guardrail-warning');
+                        guardrailStatus.textContent = '⚠️ Unverified Claims Warning';
+                        appendConsole(data.message, 'error');
+                        
+                        // Insert warning at the top of the content
+                        const warningAlert = document.createElement('div');
+                        warningAlert.style.background = 'rgba(245, 158, 11, 0.1)';
+                        warningAlert.style.border = '1px solid rgba(245, 158, 11, 0.25)';
+                        warningAlert.style.color = '#fde68a';
+                        warningAlert.style.padding = '0.8rem 1rem';
+                        warningAlert.style.borderRadius = '8px';
+                        warningAlert.style.marginBottom = '1.5rem';
+                        warningAlert.style.fontSize = '0.95rem';
+                        warningAlert.innerHTML = '<strong>Warning:</strong> This brief may contain unverified claims. Make sure all citations align with the Sources section.';
+                        briefContent.insertBefore(warningAlert, briefContent.firstChild);
+                    }
+                } 
+                else if (data.type === 'error') {
+                    showError(data.message);
+                    eventSource.close();
+                } 
+                else if (data.type === 'done') {
+                    appendConsole('Research completed successfully.');
+                    eventSource.close();
+                    resetFormState();
+                }
+            };
+
+            eventSource.onerror = function() {
+                showError('Lost connection to the Research Brief Agent server.');
+                eventSource.close();
+                resetFormState();
+            };
+        }
+
+        function showError(message) {
+            errorBox.textContent = message;
+            errorBox.style.display = 'block';
+            appendConsole(`Error: ${message}`, 'error');
+            resetFormState();
+        }
+
+        function resetFormState() {
+            submitBtn.disabled = false;
+            spinner.style.display = 'none';
+            btnText.textContent = 'Generate Research Brief';
+        }
+    </script>
+</body>
+</html>
