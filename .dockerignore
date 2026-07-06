@@ -1,0 +1,22 @@
+# Exclude environment variables and secrets
+.env
+.env.example
+
+# Exclude virtual environments
+.venv/
+venv/
+env/
+
+# Exclude Git files
+.git/
+.gitignore
+
+# Exclude Python cache and compilation files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Exclude Node.js dependencies
+node_modules/
+npm-debug.log

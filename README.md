@@ -36,6 +36,7 @@ The project structure is split into modular Python files and template resources:
 - **[templates/index.html](file:///home/archeron/ANTIGRAVITY_PROJ/templates/index.html)**: Frontend template designed with deep indigo gradients and glassmorphism. It parses Markdown on the fly via `marked.js` and updates an execution log console.
 - **[requirements.txt](file:///home/archeron/ANTIGRAVITY_PROJ/requirements.txt)**: Lists pinned Python dependencies, including `google-adk`, `ddgs`, `fastapi`, `uvicorn`, and `jinja2`.
 - **[Dockerfile](file:///home/archeron/ANTIGRAVITY_PROJ/Dockerfile)**: Docker container configuration for FastAPI web deployment.
+- **[.dockerignore](file:///home/archeron/ANTIGRAVITY_PROJ/.dockerignore)**: Excludes local environment files, cache folders, and virtual environments from build contexts.
 - **[test_tools.py](file:///home/archeron/ANTIGRAVITY_PROJ/test_tools.py)** / **[test_limits.py](file:///home/archeron/ANTIGRAVITY_PROJ/test_limits.py)** / **[test_guardrails.py](file:///home/archeron/ANTIGRAVITY_PROJ/test_guardrails.py)**: Automated verification test harnesses.
 
 ---
@@ -118,7 +119,7 @@ gcloud run deploy research-brief-agent \
   --env-vars-file .env \
   --allow-unauthenticated
 ```
-*Live URL: [Placeholder]*
+*Live URL: https://research-brief-agent-990655675970.us-central1.run.app*
 
 ---
 
